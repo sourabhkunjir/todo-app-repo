@@ -1,0 +1,71 @@
+.todo-form {
+  display: flex;
+  gap: 10px;
+  animation: fade-in-up 0.5s cubic-bezier(0.22, 1, 0.36, 1) 0.15s both;
+}
+
+.todo-form input {
+  flex: 1;
+  padding: 12px 16px;
+  font-size: 16px;
+  font-family: var(--sans);
+  border: 2px solid var(--border);
+  border-radius: 10px;
+  background: var(--bg);
+  color: var(--text-h);
+  transition:
+    border-color 0.25s ease,
+    box-shadow 0.25s ease,
+    transform 0.2s ease;
+}
+
+.todo-form input:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 4px var(--accent-bg);
+  transform: translateY(-1px);
+}
+
+.todo-form input::placeholder {
+  color: var(--text);
+  opacity: 0.6;
+}
+
+.todo-form button {
+  position: relative;
+  overflow: hidden;
+  padding: 12px 24px;
+  font-size: 16px;
+  font-family: var(--sans);
+  font-weight: 500;
+  border: none;
+  border-radius: 10px;
+  background: linear-gradient(135deg, var(--accent), #8b5cf6);
+  background-size: 200% auto;
+  color: #fff;
+  cursor: pointer;
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.25s ease,
+    background-position 0.4s ease;
+  white-space: nowrap;
+}
+
+.todo-form button:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(99, 102, 241, 0.35);
+  background-position: right center;
+}
+
+.todo-form button:active:not(:disabled) {
+  transform: translateY(0) scale(0.98);
+}
+
+.todo-form button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.todo-form--submitting button {
+  animation: glow-pulse 1.2s ease-in-out infinite;
+}

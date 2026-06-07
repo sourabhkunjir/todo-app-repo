@@ -1,0 +1,79 @@
+.app {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  padding: 48px 32px;
+  max-width: 640px;
+  margin: 0 auto;
+  width: 100%;
+  box-sizing: border-box;
+  animation: fade-in 0.4s ease both;
+
+  @media (max-width: 640px) {
+    padding: 32px 20px;
+  }
+}
+
+.app-header {
+  text-align: center;
+  margin-bottom: 32px;
+  animation: fade-in-down 0.6s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.app-header h1 {
+  margin: 0 0 8px;
+  font-size: 48px;
+  letter-spacing: -1.2px;
+  background: linear-gradient(135deg, var(--accent) 0%, #a855f7 50%, #ec4899 100%);
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: gradient-shift 5s ease infinite;
+
+  @media (max-width: 640px) {
+    font-size: 36px;
+  }
+}
+
+.subtitle {
+  color: var(--text);
+  font-size: 16px;
+  animation: fade-in-up 0.5s cubic-bezier(0.22, 1, 0.36, 1) 0.1s both;
+}
+
+.app-main {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.error-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 16px;
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  border-radius: 10px;
+  color: #ef4444;
+  font-size: 14px;
+  animation: shake 0.5s ease, fade-in 0.3s ease both;
+}
+
+.error-banner button {
+  padding: 6px 12px;
+  font-size: 13px;
+  border: 1px solid rgba(239, 68, 68, 0.4);
+  border-radius: 6px;
+  background: transparent;
+  color: #ef4444;
+  cursor: pointer;
+  transition: background 0.2s ease, transform 0.15s ease;
+}
+
+.error-banner button:hover {
+  background: rgba(239, 68, 68, 0.1);
+  transform: scale(1.05);
+}

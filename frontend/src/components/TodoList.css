@@ -1,0 +1,41 @@
+.todo-list-wrapper {
+  animation: fade-in 0.4s ease both;
+}
+
+.todo-stats {
+  font-size: 14px;
+  color: var(--text);
+  margin: 0 0 12px;
+  animation: fade-in-down 0.4s ease 0.1s both;
+  transition: opacity 0.3s ease;
+}
+
+.todo-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.todo-empty {
+  text-align: center;
+  padding: 48px 24px;
+  color: var(--text);
+  border: 2px dashed var(--border);
+  border-radius: 16px;
+  animation: scale-in 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.todo-empty__icon {
+  display: block;
+  font-size: 40px;
+  margin-bottom: 12px;
+  animation: float 3s ease-in-out infinite;
+}
+
+.todo-empty p {
+  margin: 0;
+  font-size: 16px;
+}
