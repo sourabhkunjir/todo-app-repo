@@ -13,16 +13,10 @@ K8S_BUILD="${REPO_ROOT}/k8s/.rendered"
 ACCOUNT_ID="$(aws sts get-caller-identity --query Account --output text)"
 ECR_BACKEND="${ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/todo-app-prod-backend"
 ECR_FRONTEND="${ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/todo-app-prod-frontend"
+ESO_ROLE_ARN="arn:aws:iam::${ACCOUNT_ID}:role/todo-app-prod-eso"
 
 echo "==> Configuring kubectl for ${CLUSTER_NAME} (${AWS_REGION})"
 aws eks update-kubeconfig --region "${AWS_REGION}" --name "${CLUSTER_NAME}"
-
-ESO_ROLE_ARN=""
-if aws iam get-role --role-name "${CLUSTER_NAME}-eso" >/dev/null 2>&1; then
-  ESO_ROLE_ARN="$(aws iam get-role --role-name "${CLUSTER_NAME}-eso" --query Role.Arn --output text)"
-elif aws iam get-role --role-name "todo-app-prod-eso" >/dev/null 2>&1; then
-  ESO_ROLE_ARN="$(aws iam get-role --role-name "todo-app-prod-eso" --query Role.Arn --output text)"
-fi
 
 echo "==> Installing External Secrets Operator"
 helm repo add external-secrets https://charts.external-secrets.io >/dev/null 2>&1 || true
@@ -32,16 +26,36 @@ HELM_ARGS=(
   upgrade --install external-secrets external-secrets/external-secrets
   -n external-secrets --create-namespace
   --wait --timeout 5m
+  --set "serviceAccount.annotations.eks\\.amazonaws\\.com/role-arn=${ESO_ROLE_ARN}"
 )
 
-if [ -n "${ESO_ROLE_ARN}" ]; then
-  echo "    Using IRSA role: ${ESO_ROLE_ARN}"
-  HELM_ARGS+=(--set "serviceAccount.annotations.eks\\.amazonaws\\.com/role-arn=${ESO_ROLE_ARN}")
+if helm "${HELM_ARGS[@]}" 2>/dev/null; then
+  echo "    ESO installed with IRSA role ${ESO_ROLE_ARN}"
 else
-  echo "    WARN: ESO IRSA role not found — run 'terraform apply' in infra/terraform first"
+  echo "    WARN: ESO install with IRSA failed — installing without IRSA (use manual secret fallback)"
+  helm upgrade --install external-secrets external-secrets/external-secrets \
+    -n external-secrets --create-namespace --wait --timeout 5m
 fi
 
-helm "${HELM_ARGS[@]}"
+echo "==> Waiting for External Secrets CRDs to be ready..."
+for crd in clustersecretstores.external-secrets.io externalsecrets.external-secrets.io; do
+  kubectl wait --for=condition=Established "crd/${crd}" --timeout=180s
+done
+
+create_secret_from_secrets_manager() {
+  echo "==> Creating todo-app-secrets from AWS Secrets Manager"
+  local secret_json mongodb_uri frontend_url
+  secret_json="$(aws secretsmanager get-secret-value \
+    --secret-id "${SECRETS_MANAGER_NAME}" \
+    --region "${AWS_REGION}" \
+    --query SecretString --output text)"
+  mongodb_uri="$(python3 -c "import json,sys; print(json.loads(sys.stdin.read())['MONGODB_URI'])" <<< "${secret_json}")"
+  frontend_url="$(python3 -c "import json,sys; print(json.loads(sys.stdin.read()).get('FRONTEND_URL','http://localhost'))" <<< "${secret_json}")"
+  kubectl create secret generic todo-app-secrets -n todo-app \
+    --from-literal=MONGODB_URI="${mongodb_uri}" \
+    --from-literal=FRONTEND_URL="${frontend_url}" \
+    --dry-run=client -o yaml | kubectl apply -f -
+}
 
 echo "==> Rendering Kubernetes manifests"
 rm -rf "${K8S_BUILD}"
@@ -68,13 +82,16 @@ render "${REPO_ROOT}/k8s/external-secrets/external-secret.yaml" "${K8S_BUILD}/ex
 
 echo "==> Applying manifests"
 kubectl apply -f "${K8S_BUILD}/namespace.yaml"
-kubectl apply -f "${K8S_BUILD}/external-secrets/"
 kubectl apply -f "${K8S_BUILD}/backend/"
 kubectl apply -f "${K8S_BUILD}/frontend/"
 
-echo ""
-echo "==> Waiting for ExternalSecret to sync (up to 2 min)..."
-kubectl wait --for=condition=Ready externalsecret/todo-app-secrets -n todo-app --timeout=120s 2>/dev/null || true
+if kubectl apply -f "${K8S_BUILD}/external-secrets/" 2>/dev/null; then
+  echo "==> Waiting for ExternalSecret to sync (up to 2 min)..."
+  kubectl wait --for=condition=Ready externalsecret/todo-app-secrets -n todo-app --timeout=120s 2>/dev/null || \
+    create_secret_from_secrets_manager
+else
+  create_secret_from_secrets_manager
+fi
 
 echo ""
 echo "==> Pod status"
@@ -85,5 +102,5 @@ echo "==> App URL (NLB — may take 2-3 min to appear)"
 kubectl get svc frontend -n todo-app
 
 echo ""
-echo "NOTE: Pods stay ImagePullBackOff until Jenkins pushes images to ECR (Stage 6)."
-echo "After NLB hostname appears, update FRONTEND_URL in Secrets Manager for CORS."
+echo "NOTE: Pods show ImagePullBackOff until Jenkins pushes images to ECR (Stage 5/6)."
+echo "Run 'terraform apply' on laptop if ESO IRSA role is missing."
