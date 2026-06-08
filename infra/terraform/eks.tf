@@ -8,7 +8,21 @@ module "eks" {
   vpc_id     = aws_vpc.main.id
   subnet_ids = aws_subnet.public[*].id
 
-  cluster_endpoint_public_access = true
+  cluster_endpoint_public_access                   = true
+  cluster_endpoint_public_access_cidrs             = ["0.0.0.0/0"]
+  cluster_endpoint_private_access                  = true
+
+  # Jenkins EC2 reaches EKS API via private VPC IPs — allow port 443
+  cluster_security_group_additional_rules = {
+    ingress_jenkins_https = {
+      description              = "Jenkins EC2 to EKS API"
+      protocol                 = "tcp"
+      from_port                = 443
+      to_port                  = 443
+      type                     = "ingress"
+      source_security_group_id = aws_security_group.jenkins.id
+    }
+  }
 
   eks_managed_node_groups = {
     main = {
