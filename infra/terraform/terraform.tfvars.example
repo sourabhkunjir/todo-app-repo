@@ -1,0 +1,22 @@
+# Copy to terraform.tfvars and fill in your values:
+#   cp terraform.tfvars.example terraform.tfvars
+#
+# NEVER commit terraform.tfvars (contains secrets).
+
+aws_region = "ap-south-1"
+
+# Your public IP + /32 — visit https://ifconfig.me
+# Must run `terraform apply` after changing this (updates security group only).
+ssh_cidr = "YOUR_PUBLIC_IP/32"
+
+# Learning / troubleshooting only (allows SSH from anywhere):
+# ssh_cidr = "0.0.0.0/0"
+
+# Create in AWS Console: EC2 → Key Pairs → Create key pair (download .pem)
+ssh_key_name = "your-key-pair-name"
+
+# MongoDB Atlas connection string
+mongodb_uri = "mongodb+srv://USER:PASSWORD@cluster0.xxxxx.mongodb.net/todoapp?retryWrites=true&w=majority"
+
+# Update after first K8s deploy with NLB DNS; placeholder is fine for now
+frontend_url = "http://localhost"
