@@ -20,7 +20,7 @@ const isAllowedOrigin = (origin: string): boolean => {
     return true;
   }
 
-  if (/^https:\/\/[\w-]+\.vercel\.app$/.test(origin)) {
+  if (/^https?:\/\/[\w.-]+\.elb\.amazonaws\.com(:\d+)?$/.test(origin)) {
     return true;
   }
 

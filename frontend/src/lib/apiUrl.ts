@@ -1,8 +1,7 @@
 /**
- * Builds a full API URL. Accepts VITE_API_URL as either:
- * - https://your-backend.vercel.app
- * - https://your-backend.vercel.app/api
- * Paths like "/todos" are always resolved under "/api".
+ * Builds a full API URL. When VITE_API_URL is empty, uses relative paths
+ * (e.g. /api/todos) so nginx can proxy to the backend.
+ * When set, accepts origin with or without a trailing /api segment.
  */
 export function getApiUrl(path: string): string {
   const configured = (import.meta.env.VITE_API_URL ?? '').trim().replace(/\/+$/, '');
