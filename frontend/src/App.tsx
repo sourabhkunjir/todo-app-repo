@@ -38,7 +38,7 @@ function App() {
     <div className="app">
       <header className="app-header">
         <h1>Todo App</h1>
-        <p className="subtitle">Stay organized, one task at a time</p>
+        <p className="subtitle">Stayyyy organized, one task at a time</p>
       </header>
 
       <main className="app-main">
