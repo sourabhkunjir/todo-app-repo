@@ -1,0 +1,78 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: todo-app-alerts
+  namespace: monitoring
+  labels:
+    release: kube-prometheus-stack
+spec:
+  groups:
+    - name: todo-app
+      rules:
+        - alert: TodoBackendDown
+          expr: |
+            kube_deployment_status_replicas_available{namespace="todo-app", deployment="backend"} < 1
+          for: 2m
+          labels:
+            severity: critical
+          annotations:
+            summary: Todo backend has no available replicas
+            description: Backend deployment in todo-app namespace has zero ready pods for more than 2 minutes.
+
+        - alert: TodoFrontendDown
+          expr: |
+            kube_deployment_status_replicas_available{namespace="todo-app", deployment="frontend"} < 1
+          for: 2m
+          labels:
+            severity: critical
+          annotations:
+            summary: Todo frontend has no available replicas
+            description: Frontend deployment in todo-app namespace has zero ready pods for more than 2 minutes.
+
+        - alert: TodoPodCrashLooping
+          expr: |
+            increase(kube_pod_container_status_restarts_total{namespace="todo-app"}[15m]) > 3
+          for: 5m
+          labels:
+            severity: warning
+          annotations:
+            summary: Pod is crash looping in todo-app
+            description: Container {{ $labels.container }} in pod {{ $labels.pod }} restarted more than 3 times in 15 minutes.
+
+        - alert: TodoHighErrorRate
+          expr: |
+            (
+              sum(rate(http_requests_total{namespace="todo-app", status_code=~"5.."}[5m]))
+              /
+              sum(rate(http_requests_total{namespace="todo-app"}[5m]))
+            ) > 0.05
+          for: 5m
+          labels:
+            severity: warning
+          annotations:
+            summary: High HTTP 5xx error rate on todo backend
+            description: More than 5% of backend requests returned 5xx in the last 5 minutes.
+
+        - alert: TodoNodeHighCPU
+          expr: |
+            100 - (avg by(instance) (rate(node_cpu_seconds_total{mode="idle"}[5m])) * 100) > 85
+          for: 10m
+          labels:
+            severity: warning
+          annotations:
+            summary: EKS worker node CPU is high
+            description: Node CPU usage has been above 85% for 10 minutes.
+
+        - alert: TodoPodMemoryHigh
+          expr: |
+            (
+              sum by (pod, container) (container_memory_working_set_bytes{namespace="todo-app", container!=""})
+              /
+              sum by (pod, container) (container_spec_memory_limit_bytes{namespace="todo-app", container!=""})
+            ) > 0.8
+          for: 5m
+          labels:
+            severity: warning
+          annotations:
+            summary: Todo app pod memory usage is high
+            description: Pod {{ $labels.pod }} container {{ $labels.container }} is using more than 80% of its memory limit.

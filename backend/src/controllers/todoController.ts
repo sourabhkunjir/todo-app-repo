@@ -1,4 +1,5 @@
 import { Request, Response } from 'express';
+import { todoOperationsTotal } from '../metrics';
 import { Todo } from '../models/Todo';
 
 export const getTodos = async (_req: Request, res: Response): Promise<void> => {
@@ -20,6 +21,7 @@ export const createTodo = async (req: Request, res: Response): Promise<void> => 
     }
 
     const todo = await Todo.create({ title: title.trim() });
+    todoOperationsTotal.inc({ operation: 'create' });
     res.status(201).json(todo);
   } catch (error) {
     res.status(500).json({ message: 'Failed to create todo' });
@@ -57,6 +59,7 @@ export const updateTodo = async (req: Request, res: Response): Promise<void> => 
       return;
     }
 
+    todoOperationsTotal.inc({ operation: 'update' });
     res.json(todo);
   } catch (error) {
     res.status(500).json({ message: 'Failed to update todo' });
@@ -72,6 +75,7 @@ export const deleteTodo = async (req: Request, res: Response): Promise<void> => 
       return;
     }
 
+    todoOperationsTotal.inc({ operation: 'delete' });
     res.json({ message: 'Todo deleted successfully' });
   } catch (error) {
     res.status(500).json({ message: 'Failed to delete todo' });

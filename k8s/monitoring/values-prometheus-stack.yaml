@@ -1,0 +1,98 @@
+# kube-prometheus-stack values tuned for a single t3.medium EKS worker node.
+# Install: scripts/bootstrap-monitoring.sh
+
+fullnameOverride: kube-prometheus-stack
+
+defaultRules:
+  create: true
+  rules:
+    alertmanager: true
+    etcd: false
+    kubeControllerManager: false
+    kubeScheduler: false
+    kubeProxy: false
+
+alertmanager:
+  enabled: true
+  alertmanagerSpec:
+    resources:
+      requests:
+        cpu: 50m
+        memory: 64Mi
+      limits:
+        cpu: 200m
+        memory: 128Mi
+
+grafana:
+  enabled: true
+  defaultDashboardsEnabled: true
+  adminPassword: changeme-grafana-admin
+  service:
+    type: LoadBalancer
+    port: 80
+    targetPort: 3000
+  persistence:
+    enabled: false
+  resources:
+    requests:
+      cpu: 100m
+      memory: 128Mi
+    limits:
+      cpu: 300m
+      memory: 256Mi
+  sidecar:
+    dashboards:
+      enabled: true
+      label: grafana_dashboard
+      labelValue: "1"
+      searchNamespace: monitoring
+    datasources:
+      enabled: true
+      defaultDatasourceEnabled: true
+
+prometheus:
+  enabled: true
+  prometheusSpec:
+    retention: 3d
+    scrapeInterval: 30s
+    evaluationInterval: 30s
+    resources:
+      requests:
+        cpu: 200m
+        memory: 512Mi
+      limits:
+        cpu: 500m
+        memory: 1Gi
+    serviceMonitorSelectorNilUsesHelmValues: false
+    podMonitorSelectorNilUsesHelmValues: false
+    ruleSelectorNilUsesHelmValues: false
+
+prometheusOperator:
+  resources:
+    requests:
+      cpu: 100m
+      memory: 128Mi
+    limits:
+      cpu: 200m
+      memory: 256Mi
+
+kubeApiServer:
+  enabled: true
+
+kubeControllerManager:
+  enabled: false
+
+kubeScheduler:
+  enabled: false
+
+kubeEtcd:
+  enabled: false
+
+kubeProxy:
+  enabled: false
+
+kubeStateMetrics:
+  enabled: true
+
+nodeExporter:
+  enabled: true

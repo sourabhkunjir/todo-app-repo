@@ -1,0 +1,154 @@
+{
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": { "type": "grafana", "uid": "-- Grafana --" },
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "type": "dashboard"
+      }
+    ]
+  },
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 0,
+  "id": null,
+  "links": [],
+  "panels": [
+    {
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": {
+        "defaults": {
+          "mappings": [
+            { "options": { "0": { "color": "red", "index": 0, "text": "DOWN" } }, "type": "value" },
+            { "options": { "from": 1, "result": { "color": "green", "index": 1, "text": "UP" }, "to": 999 }, "type": "range" }
+          ],
+          "thresholds": { "mode": "absolute", "steps": [{ "color": "red", "value": null }, { "color": "green", "value": 1 }] }
+        }
+      },
+      "gridPos": { "h": 4, "w": 6, "x": 0, "y": 0 },
+      "id": 1,
+      "options": { "colorMode": "background", "graphMode": "none", "justifyMode": "center", "orientation": "auto", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }, "textMode": "auto" },
+      "title": "Backend replicas available",
+      "type": "stat",
+      "targets": [{ "expr": "kube_deployment_status_replicas_available{namespace=\"todo-app\", deployment=\"backend\"}", "refId": "A" }]
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": {
+        "defaults": {
+          "mappings": [
+            { "options": { "0": { "color": "red", "index": 0, "text": "DOWN" } }, "type": "value" },
+            { "options": { "from": 1, "result": { "color": "green", "index": 1, "text": "UP" }, "to": 999 }, "type": "range" }
+          ],
+          "thresholds": { "mode": "absolute", "steps": [{ "color": "red", "value": null }, { "color": "green", "value": 1 }] }
+        }
+      },
+      "gridPos": { "h": 4, "w": 6, "x": 6, "y": 0 },
+      "id": 2,
+      "options": { "colorMode": "background", "graphMode": "none", "justifyMode": "center", "orientation": "auto", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }, "textMode": "auto" },
+      "title": "Frontend replicas available",
+      "type": "stat",
+      "targets": [{ "expr": "kube_deployment_status_replicas_available{namespace=\"todo-app\", deployment=\"frontend\"}", "refId": "A" }]
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": { "defaults": { "unit": "reqps" } },
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 4 },
+      "id": 3,
+      "options": { "legend": { "displayMode": "list", "placement": "bottom" }, "tooltip": { "mode": "single" } },
+      "title": "Backend request rate",
+      "type": "timeseries",
+      "targets": [{ "expr": "sum(rate(http_requests_total{namespace=\"todo-app\"}[1m]))", "legendFormat": "requests/sec", "refId": "A" }]
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": { "defaults": { "unit": "reqps" } },
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 4 },
+      "id": 4,
+      "options": { "legend": { "displayMode": "table", "placement": "bottom" }, "tooltip": { "mode": "multi" } },
+      "title": "Requests by status code",
+      "type": "timeseries",
+      "targets": [{ "expr": "sum by (status_code) (rate(http_requests_total{namespace=\"todo-app\"}[1m]))", "legendFormat": "{{status_code}}", "refId": "A" }]
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": { "defaults": { "unit": "s" } },
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 12 },
+      "id": 5,
+      "options": { "legend": { "displayMode": "list", "placement": "bottom" } },
+      "title": "Backend latency (p95)",
+      "type": "timeseries",
+      "targets": [{
+        "expr": "histogram_quantile(0.95, sum by (le) (rate(http_request_duration_seconds_bucket{namespace=\"todo-app\"}[5m])))",
+        "legendFormat": "p95",
+        "refId": "A"
+      }]
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": { "defaults": { "unit": "ops" } },
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 12 },
+      "id": 6,
+      "options": { "legend": { "displayMode": "list", "placement": "bottom" } },
+      "title": "Todo operations",
+      "type": "timeseries",
+      "targets": [{ "expr": "sum by (operation) (rate(todo_operations_total{namespace=\"todo-app\"}[5m]))", "legendFormat": "{{operation}}", "refId": "A" }]
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": { "defaults": { "unit": "percentunit", "max": 1, "min": 0 } },
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 20 },
+      "id": 7,
+      "options": { "legend": { "displayMode": "table", "placement": "bottom" } },
+      "title": "Pod CPU usage (todo-app)",
+      "type": "timeseries",
+      "targets": [{
+        "expr": "sum by (pod) (rate(container_cpu_usage_seconds_total{namespace=\"todo-app\", container!=\"\", container!=\"POD\"}[5m]))",
+        "legendFormat": "{{pod}}",
+        "refId": "A"
+      }]
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": { "defaults": { "unit": "bytes" } },
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 20 },
+      "id": 8,
+      "options": { "legend": { "displayMode": "table", "placement": "bottom" } },
+      "title": "Pod memory usage (todo-app)",
+      "type": "timeseries",
+      "targets": [{
+        "expr": "sum by (pod) (container_memory_working_set_bytes{namespace=\"todo-app\", container!=\"\", container!=\"POD\"})",
+        "legendFormat": "{{pod}}",
+        "refId": "A"
+      }]
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": { "defaults": { "unit": "short" } },
+      "gridPos": { "h": 8, "w": 24, "x": 0, "y": 28 },
+      "id": 9,
+      "options": { "legend": { "displayMode": "table", "placement": "bottom" } },
+      "title": "Container restarts (todo-app)",
+      "type": "timeseries",
+      "targets": [{
+        "expr": "kube_pod_container_status_restarts_total{namespace=\"todo-app\"}",
+        "legendFormat": "{{pod}} / {{container}}",
+        "refId": "A"
+      }]
+    }
+  ],
+  "refresh": "30s",
+  "schemaVersion": 39,
+  "tags": ["todo-app", "prometheus"],
+  "templating": { "list": [] },
+  "time": { "from": "now-1h", "to": "now" },
+  "timepicker": {},
+  "timezone": "browser",
+  "title": "Todo App Overview",
+  "uid": "todo-app-overview",
+  "version": 1
+}

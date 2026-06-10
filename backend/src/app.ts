@@ -2,6 +2,7 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import express, { NextFunction, Request, Response } from 'express';
 import { connectDB } from './config/db';
+import { metricsHandler, metricsMiddleware } from './metrics';
 import todoRoutes from './routes/todoRoutes';
 
 dotenv.config();
@@ -46,6 +47,7 @@ app.use(
   })
 );
 app.use(express.json());
+app.use(metricsMiddleware);
 
 const ensureDb = async (_req: Request, _res: Response, next: NextFunction) => {
   try {
@@ -63,6 +65,8 @@ app.get('/', (_req, res) => {
 app.get('/api/health', (_req, res) => {
   res.json({ status: 'ok' });
 });
+
+app.get('/metrics', metricsHandler);
 
 app.use('/api/todos', ensureDb, todoRoutes);
 
