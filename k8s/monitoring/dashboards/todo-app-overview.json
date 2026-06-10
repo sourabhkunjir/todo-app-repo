@@ -62,7 +62,7 @@
       "options": { "legend": { "displayMode": "list", "placement": "bottom" }, "tooltip": { "mode": "single" } },
       "title": "Backend request rate",
       "type": "timeseries",
-      "targets": [{ "expr": "sum(rate(http_requests_total{namespace=\"todo-app\"}[1m]))", "legendFormat": "requests/sec", "refId": "A" }]
+      "targets": [{ "expr": "sum(rate(http_requests_total{service=\"backend\"}[5m]))", "legendFormat": "requests/sec", "refId": "A" }]
     },
     {
       "datasource": { "type": "prometheus", "uid": "prometheus" },
@@ -72,7 +72,7 @@
       "options": { "legend": { "displayMode": "table", "placement": "bottom" }, "tooltip": { "mode": "multi" } },
       "title": "Requests by status code",
       "type": "timeseries",
-      "targets": [{ "expr": "sum by (status_code) (rate(http_requests_total{namespace=\"todo-app\"}[1m]))", "legendFormat": "{{status_code}}", "refId": "A" }]
+      "targets": [{ "expr": "sum by (status_code) (rate(http_requests_total{service=\"backend\"}[5m]))", "legendFormat": "{{status_code}}", "refId": "A" }]
     },
     {
       "datasource": { "type": "prometheus", "uid": "prometheus" },
@@ -83,7 +83,7 @@
       "title": "Backend latency (p95)",
       "type": "timeseries",
       "targets": [{
-        "expr": "histogram_quantile(0.95, sum by (le) (rate(http_request_duration_seconds_bucket{namespace=\"todo-app\"}[5m])))",
+        "expr": "histogram_quantile(0.95, sum by (le) (rate(http_request_duration_seconds_bucket{service=\"backend\"}[5m])))",
         "legendFormat": "p95",
         "refId": "A"
       }]
@@ -96,7 +96,7 @@
       "options": { "legend": { "displayMode": "list", "placement": "bottom" } },
       "title": "Todo operations",
       "type": "timeseries",
-      "targets": [{ "expr": "sum by (operation) (rate(todo_operations_total{namespace=\"todo-app\"}[5m]))", "legendFormat": "{{operation}}", "refId": "A" }]
+      "targets": [{ "expr": "sum by (operation) (rate(todo_operations_total{service=\"backend\"}[5m]))", "legendFormat": "{{operation}}", "refId": "A" }]
     },
     {
       "datasource": { "type": "prometheus", "uid": "prometheus" },
