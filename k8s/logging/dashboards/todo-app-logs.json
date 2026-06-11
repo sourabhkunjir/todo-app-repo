@@ -1,0 +1,268 @@
+{
+  "annotations": { "list": [] },
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 0,
+  "links": [
+    {
+      "title": "Todo App Overview (metrics)",
+      "type": "link",
+      "url": "/d/todo-app-overview/todo-app-overview",
+      "icon": "external link"
+    }
+  ],
+  "panels": [
+    {
+      "datasource": { "type": "loki", "uid": "loki" },
+      "fieldConfig": { "defaults": { "unit": "short" }, "overrides": [] },
+      "gridPos": { "h": 6, "w": 8, "x": 0, "y": 0 },
+      "id": 1,
+      "options": { "legend": { "displayMode": "list", "placement": "bottom" }, "tooltip": { "mode": "single" } },
+      "title": "Log lines per minute (all todo-app)",
+      "type": "timeseries",
+      "targets": [{
+        "datasource": { "type": "loki", "uid": "loki" },
+        "expr": "sum(count_over_time({namespace=\"todo-app\"}[1m]))",
+        "legendFormat": "lines/min",
+        "refId": "A"
+      }]
+    },
+    {
+      "datasource": { "type": "loki", "uid": "loki" },
+      "fieldConfig": { "defaults": { "unit": "short" }, "overrides": [] },
+      "gridPos": { "h": 6, "w": 8, "x": 8, "y": 0 },
+      "id": 2,
+      "options": { "legend": { "displayMode": "list", "placement": "bottom" } },
+      "title": "Backend log lines / min",
+      "type": "timeseries",
+      "targets": [{
+        "datasource": { "type": "loki", "uid": "loki" },
+        "expr": "sum(count_over_time({namespace=\"todo-app\", app=\"backend\"}[1m]))",
+        "legendFormat": "backend",
+        "refId": "A"
+      }]
+    },
+    {
+      "datasource": { "type": "loki", "uid": "loki" },
+      "fieldConfig": { "defaults": { "unit": "short" }, "overrides": [] },
+      "gridPos": { "h": 6, "w": 8, "x": 16, "y": 0 },
+      "id": 3,
+      "options": { "legend": { "displayMode": "list", "placement": "bottom" } },
+      "title": "Frontend (nginx) log lines / min",
+      "type": "timeseries",
+      "targets": [{
+        "datasource": { "type": "loki", "uid": "loki" },
+        "expr": "sum(count_over_time({namespace=\"todo-app\", app=\"frontend\"}[1m]))",
+        "legendFormat": "frontend",
+        "refId": "A"
+      }]
+    },
+    {
+      "datasource": { "type": "loki", "uid": "loki" },
+      "fieldConfig": { "defaults": { "unit": "short", "color": { "mode": "fixed", "fixedColor": "red" } }, "overrides": [] },
+      "gridPos": { "h": 6, "w": 12, "x": 0, "y": 6 },
+      "id": 4,
+      "options": { "legend": { "displayMode": "list", "placement": "bottom" } },
+      "title": "Error / failure lines per minute",
+      "type": "timeseries",
+      "targets": [{
+        "datasource": { "type": "loki", "uid": "loki" },
+        "expr": "sum(count_over_time({namespace=\"todo-app\"} |~ \"(?i)(error|fail|exception|fatal|panic)\" [1m]))",
+        "legendFormat": "errors/min",
+        "refId": "A"
+      }]
+    },
+    {
+      "datasource": { "type": "loki", "uid": "loki" },
+      "fieldConfig": { "defaults": { "unit": "short" }, "overrides": [] },
+      "gridPos": { "h": 6, "w": 12, "x": 12, "y": 6 },
+      "id": 5,
+      "options": { "legend": { "displayMode": "table", "placement": "bottom" } },
+      "title": "HTTP 4xx / 5xx in backend access logs",
+      "type": "timeseries",
+      "targets": [{
+        "datasource": { "type": "loki", "uid": "loki" },
+        "expr": "sum(count_over_time({namespace=\"todo-app\", app=\"backend\"} |~ \" 5[0-9]{2} \"[1m]))",
+        "legendFormat": "HTTP 5xx",
+        "refId": "A"
+      }, {
+        "datasource": { "type": "loki", "uid": "loki" },
+        "expr": "sum(count_over_time({namespace=\"todo-app\", app=\"backend\"} |~ \" 4[0-9]{2} \"[1m]))",
+        "legendFormat": "HTTP 4xx",
+        "refId": "B"
+      }]
+    },
+    {
+      "datasource": { "type": "loki", "uid": "loki" },
+      "gridPos": { "h": 10, "w": 24, "x": 0, "y": 12 },
+      "id": 6,
+      "options": {
+        "dedupStrategy": "none",
+        "enableLogDetails": true,
+        "prettifyLogMessage": false,
+        "showCommonLabels": false,
+        "showLabels": true,
+        "showTime": true,
+        "sortOrder": "Descending",
+        "wrapLogMessage": true
+      },
+      "title": "Live tail — all todo-app logs",
+      "type": "logs",
+      "targets": [{
+        "datasource": { "type": "loki", "uid": "loki" },
+        "expr": "{namespace=\"todo-app\"}",
+        "refId": "A"
+      }]
+    },
+    {
+      "datasource": { "type": "loki", "uid": "loki" },
+      "gridPos": { "h": 10, "w": 12, "x": 0, "y": 22 },
+      "id": 7,
+      "options": {
+        "dedupStrategy": "none",
+        "enableLogDetails": true,
+        "showLabels": true,
+        "showTime": true,
+        "sortOrder": "Descending",
+        "wrapLogMessage": true
+      },
+      "title": "Backend — HTTP access logs (morgan)",
+      "type": "logs",
+      "targets": [{
+        "datasource": { "type": "loki", "uid": "loki" },
+        "expr": "{namespace=\"todo-app\", app=\"backend\"} |~ \"^(GET|POST|PATCH|DELETE|PUT|OPTIONS) \"",
+        "refId": "A"
+      }]
+    },
+    {
+      "datasource": { "type": "loki", "uid": "loki" },
+      "gridPos": { "h": 10, "w": 12, "x": 12, "y": 22 },
+      "id": 8,
+      "options": {
+        "dedupStrategy": "none",
+        "enableLogDetails": true,
+        "showLabels": true,
+        "showTime": true,
+        "sortOrder": "Descending",
+        "wrapLogMessage": true
+      },
+      "title": "Backend — errors & stack traces",
+      "type": "logs",
+      "targets": [{
+        "datasource": { "type": "loki", "uid": "loki" },
+        "expr": "{namespace=\"todo-app\", app=\"backend\"} |~ \"(?i)(\\\\[ERROR\\\\]|error|exception|Mongoose|MongoDB|CORS)\"",
+        "refId": "A"
+      }]
+    },
+    {
+      "datasource": { "type": "loki", "uid": "loki" },
+      "gridPos": { "h": 10, "w": 12, "x": 0, "y": 32 },
+      "id": 9,
+      "options": {
+        "dedupStrategy": "none",
+        "enableLogDetails": true,
+        "showLabels": true,
+        "showTime": true,
+        "sortOrder": "Descending",
+        "wrapLogMessage": true
+      },
+      "title": "Backend — todo operations [TODO]",
+      "type": "logs",
+      "targets": [{
+        "datasource": { "type": "loki", "uid": "loki" },
+        "expr": "{namespace=\"todo-app\", app=\"backend\"} |~ \"\\\\[TODO\\\\]\"",
+        "refId": "A"
+      }]
+    },
+    {
+      "datasource": { "type": "loki", "uid": "loki" },
+      "gridPos": { "h": 10, "w": 12, "x": 12, "y": 32 },
+      "id": 10,
+      "options": {
+        "dedupStrategy": "none",
+        "enableLogDetails": true,
+        "showLabels": true,
+        "showTime": true,
+        "sortOrder": "Descending",
+        "wrapLogMessage": true
+      },
+      "title": "Frontend — nginx access & proxy logs",
+      "type": "logs",
+      "targets": [{
+        "datasource": { "type": "loki", "uid": "loki" },
+        "expr": "{namespace=\"todo-app\", app=\"frontend\"}",
+        "refId": "A"
+      }]
+    },
+    {
+      "datasource": { "type": "loki", "uid": "loki" },
+      "gridPos": { "h": 10, "w": 12, "x": 0, "y": 42 },
+      "id": 11,
+      "options": {
+        "dedupStrategy": "none",
+        "enableLogDetails": true,
+        "showLabels": true,
+        "showTime": true,
+        "sortOrder": "Descending",
+        "wrapLogMessage": true
+      },
+      "title": "Database / MongoDB messages",
+      "type": "logs",
+      "targets": [{
+        "datasource": { "type": "loki", "uid": "loki" },
+        "expr": "{namespace=\"todo-app\", app=\"backend\"} |~ \"(?i)(mongo|mongoose|database|connected)\"",
+        "refId": "A"
+      }]
+    },
+    {
+      "datasource": { "type": "loki", "uid": "loki" },
+      "gridPos": { "h": 10, "w": 12, "x": 12, "y": 42 },
+      "id": 12,
+      "options": {
+        "dedupStrategy": "none",
+        "enableLogDetails": true,
+        "showLabels": true,
+        "showTime": true,
+        "sortOrder": "Descending",
+        "wrapLogMessage": true
+      },
+      "title": "Monitoring namespace (Prometheus/Grafana/Loki)",
+      "type": "logs",
+      "targets": [{
+        "datasource": { "type": "loki", "uid": "loki" },
+        "expr": "{namespace=\"monitoring\"} |~ \"(?i)(error|warn|fail)\"",
+        "refId": "A"
+      }]
+    },
+    {
+      "datasource": { "type": "loki", "uid": "loki" },
+      "gridPos": { "h": 8, "w": 24, "x": 0, "y": 52 },
+      "id": 13,
+      "options": {
+        "dedupStrategy": "none",
+        "enableLogDetails": true,
+        "showLabels": true,
+        "showTime": true,
+        "sortOrder": "Descending",
+        "wrapLogMessage": true
+      },
+      "title": "API routes only (/api/* requests in nginx or backend)",
+      "type": "logs",
+      "targets": [{
+        "datasource": { "type": "loki", "uid": "loki" },
+        "expr": "{namespace=\"todo-app\"} |~ \"/api/\"",
+        "refId": "A"
+      }]
+    }
+  ],
+  "refresh": "10s",
+  "schemaVersion": 39,
+  "tags": ["todo-app", "loki", "logs"],
+  "templating": { "list": [] },
+  "time": { "from": "now-30m", "to": "now" },
+  "timepicker": {},
+  "timezone": "browser",
+  "title": "Todo App Logs",
+  "uid": "todo-app-logs",
+  "version": 1
+}

@@ -1,6 +1,7 @@
 import cors from 'cors';
 import dotenv from 'dotenv';
 import express, { NextFunction, Request, Response } from 'express';
+import morgan from 'morgan';
 import { connectDB } from './config/db';
 import { metricsHandler, metricsMiddleware } from './metrics';
 import todoRoutes from './routes/todoRoutes';
@@ -47,6 +48,7 @@ app.use(
   })
 );
 app.use(express.json());
+app.use(morgan(':method :url :status :response-time ms - :res[content-length]'));
 app.use(metricsMiddleware);
 
 const ensureDb = async (_req: Request, _res: Response, next: NextFunction) => {
@@ -75,7 +77,10 @@ app.use((_req, res) => {
 });
 
 app.use((error: Error, _req: Request, res: Response, _next: NextFunction) => {
-  console.error(error);
+  console.error('[ERROR]', error.name, error.message);
+  if (error.stack) {
+    console.error(error.stack);
+  }
 
   if (error.message === 'Not allowed by CORS') {
     res.status(403).json({ message: 'Not allowed by CORS' });

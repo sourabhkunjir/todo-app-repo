@@ -35,6 +35,6 @@ export const connectDB = async (): Promise<typeof mongoose> => {
   }
 
   cached.conn = await cached.promise;
-  console.log('MongoDB connected');
+  console.log('[DB] MongoDB connected successfully');
   return cached.conn;
 };
