@@ -30,7 +30,16 @@ helm upgrade --install "${LOKI_RELEASE}" grafana/loki \
   --namespace "${LOGGING_NAMESPACE}" \
   --values "${REPO_ROOT}/k8s/logging/values-loki.yaml" \
   --wait \
-  --timeout 10m
+  --timeout 10m || {
+    echo ""
+    echo "WARN: Loki Helm wait timed out. Checking pod state..."
+    kubectl get pods -n "${LOGGING_NAMESPACE}" -l app.kubernetes.io/name=loki
+    kubectl describe pod -n "${LOGGING_NAMESPACE}" -l app.kubernetes.io/name=loki | tail -30
+    echo ""
+    echo "If Events show 'Insufficient memory/cpu', the node is full."
+    echo "Try: git pull (lighter values-loki.yaml) and re-run this script."
+    exit 1
+  }
 
 echo "==> Installing Promtail (${PROMTAIL_RELEASE})"
 helm upgrade --install "${PROMTAIL_RELEASE}" grafana/promtail \
@@ -54,6 +63,12 @@ kubectl create configmap todo-app-logs \
   --from-file=todo-app-logs.json="${REPO_ROOT}/k8s/logging/dashboards/todo-app-logs.json" \
   --dry-run=client -o yaml | kubectl apply -f -
 kubectl label configmap todo-app-logs -n "${LOGGING_NAMESPACE}" grafana_dashboard=1 --overwrite
+kubectl annotate configmap todo-app-logs -n "${LOGGING_NAMESPACE}" \
+  grafana_folder="Todo App" --overwrite
+
+echo "==> Restarting Grafana so sidecar reloads dashboards + Loki datasource"
+kubectl rollout restart deployment/kube-prometheus-stack-grafana -n "${LOGGING_NAMESPACE}"
+kubectl rollout status deployment/kube-prometheus-stack-grafana -n "${LOGGING_NAMESPACE}" --timeout=180s
 
 echo ""
 echo "==> Logging stack pods"

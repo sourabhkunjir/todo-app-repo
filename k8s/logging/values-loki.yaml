@@ -1,4 +1,4 @@
-# Loki — SingleBinary mode for a single t3.medium EKS worker.
+# Loki — minimal SingleBinary for one t3.medium EKS worker (already runs Prometheus/Grafana).
 # Install: scripts/bootstrap-logging.sh
 
 deploymentMode: SingleBinary
@@ -19,25 +19,23 @@ loki:
           prefix: loki_index_
           period: 24h
   limits_config:
-    retention_period: 72h
-    max_query_series: 1000
-    ingestion_rate_mb: 8
-    ingestion_burst_size_mb: 16
+    retention_period: 24h
+    max_query_series: 500
+    ingestion_rate_mb: 4
+    ingestion_burst_size_mb: 8
 
 singleBinary:
   replicas: 1
   persistence:
-    enabled: true
-    size: 5Gi
+    enabled: false
   resources:
     requests:
-      cpu: 100m
-      memory: 256Mi
+      cpu: 50m
+      memory: 128Mi
     limits:
-      cpu: 500m
-      memory: 512Mi
+      cpu: 300m
+      memory: 384Mi
 
-# Disable components not needed for single-node learning setup
 backend:
   replicas: 0
 read:
@@ -48,7 +46,12 @@ write:
 gateway:
   enabled: false
 
+# Top-level + nested — chart version varies
+lokiCanary:
+  enabled: false
+
 monitoring:
+  enabled: false
   selfMonitoring:
     enabled: false
     grafanaAgent:
