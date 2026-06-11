@@ -29,6 +29,8 @@ echo "==> Installing Loki (${LOKI_RELEASE})"
 helm upgrade --install "${LOKI_RELEASE}" grafana/loki \
   --namespace "${LOGGING_NAMESPACE}" \
   --values "${REPO_ROOT}/k8s/logging/values-loki.yaml" \
+  --set lokiCanary.enabled=false \
+  --set test.enabled=false \
   --wait \
   --timeout 10m || {
     echo ""
@@ -36,10 +38,12 @@ helm upgrade --install "${LOKI_RELEASE}" grafana/loki \
     kubectl get pods -n "${LOGGING_NAMESPACE}" -l app.kubernetes.io/name=loki
     kubectl describe pod -n "${LOGGING_NAMESPACE}" -l app.kubernetes.io/name=loki | tail -30
     echo ""
-    echo "If Events show 'Insufficient memory/cpu', the node is full."
-    echo "Try: git pull (lighter values-loki.yaml) and re-run this script."
+    echo "If Events show 'Too many pods', delete loki-canary and/or upgrade node to t3.large."
     exit 1
   }
+
+echo "==> Removing loki-canary (frees a pod slot on small nodes)"
+kubectl delete daemonset loki-canary -n "${LOGGING_NAMESPACE}" --ignore-not-found
 
 echo "==> Installing Promtail (${PROMTAIL_RELEASE})"
 helm upgrade --install "${PROMTAIL_RELEASE}" grafana/promtail \
